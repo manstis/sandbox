@@ -44,6 +44,21 @@ public class TestUtils {
                 .get(APIConstants.USER_API_BASE_PATH);
     }
 
+    public static Response getBridgesFilterByName(String name) {
+        return jsonRequest()
+                .get(APIConstants.USER_API_BASE_PATH + "?name=" + name);
+    }
+
+    public static Response getBridgesFilterByStatus(ManagedResourceStatus status) {
+        return jsonRequest()
+                .get(APIConstants.USER_API_BASE_PATH + "?status=" + status);
+    }
+
+    public static Response getBridgesFilterByNameAndStatus(String name, ManagedResourceStatus status) {
+        return jsonRequest()
+                .get(APIConstants.USER_API_BASE_PATH + "?name=" + name + "&status=" + status);
+    }
+
     public static Response getBridge(String id) {
         return jsonRequest()
                 .get(APIConstants.USER_API_BASE_PATH + id);
