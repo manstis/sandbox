@@ -128,6 +128,24 @@ public class BridgeDAOTest {
     }
 
     @Test
+    public void testListByCustomerIdFilterByNameWildcard() {
+        Bridge bridge1 = buildBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
+        bridgeDAO.persist(bridge1);
+
+        Bridge bridge2 = buildBridge("mySecondBridgeId", "mySecondBridgeName");
+        bridgeDAO.persist(bridge2);
+
+        ListResult<Bridge> retrievedBridges = bridgeDAO.findByCustomerId(DEFAULT_CUSTOMER_ID,
+                new QueryResourceInfo(DEFAULT_PAGE, DEFAULT_PAGE_SIZE, new QueryFilterInfo(DEFAULT_BRIDGE_NAME.substring(0, 5))));
+        assertThat(retrievedBridges).isNotNull();
+        assertThat(retrievedBridges.getSize()).isEqualTo(1);
+        assertThat(retrievedBridges.getTotal()).isEqualTo(1);
+        assertThat(retrievedBridges.getPage()).isZero();
+
+        assertThat(retrievedBridges.getItems().get(0).getId()).isEqualTo(bridge1.getId());
+    }
+
+    @Test
     public void testListByCustomerIdFilterByStatus() {
         Bridge bridge1 = buildBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
         bridge1.setStatus(ACCEPTED);

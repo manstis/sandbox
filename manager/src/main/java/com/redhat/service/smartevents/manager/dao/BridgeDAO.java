@@ -18,6 +18,9 @@ import io.quarkus.panache.common.Parameters;
 @Transactional
 public class BridgeDAO implements PanacheRepositoryBase<Bridge, String> {
 
+    private static final int FILTER_NAME = 1;
+    private static final int FILTER_STATUS = 2;
+
     public List<Bridge> findByShardIdWithReadyDependencies(String shardId) {
         Parameters params = Parameters
                 .with("shardId", shardId);
@@ -42,22 +45,35 @@ public class BridgeDAO implements PanacheRepositoryBase<Bridge, String> {
         List<Bridge> bridges;
         String filterName = queryInfo.getFilterInfo().getFilterName();
         ManagedResourceStatus filterStatus = queryInfo.getFilterInfo().getFilterStatus();
-        if (Objects.isNull(filterName) && Objects.isNull(filterStatus)) {
-            total = find("#BRIDGE.findByCustomerId", parameters).count();
-            bridges = find("#BRIDGE.findByCustomerId", parameters).page(queryInfo.getPageNumber(), queryInfo.getPageSize()).list();
-        } else if (Objects.isNull(filterStatus)) {
-            parameters = parameters.and("name", filterName);
-            total = find("#BRIDGE.findByCustomerIdFilterByName", parameters).count();
-            bridges = find("#BRIDGE.findByCustomerIdFilterByName", parameters).page(queryInfo.getPageNumber(), queryInfo.getPageSize()).list();
-        } else if (Objects.isNull(filterName)) {
-            parameters = parameters.and("status", filterStatus);
-            total = find("#BRIDGE.findByCustomerIdFilterByStatus", parameters).count();
-            bridges = find("#BRIDGE.findByCustomerIdFilterByStatus", parameters).page(queryInfo.getPageNumber(), queryInfo.getPageSize()).list();
-        } else {
-            parameters = parameters.and("name", filterName);
-            parameters = parameters.and("status", filterStatus);
-            total = find("#BRIDGE.findByCustomerIdFilterByNameAndStatus", parameters).count();
-            bridges = find("#BRIDGE.findByCustomerIdFilterByNameAndStatus", parameters).page(queryInfo.getPageNumber(), queryInfo.getPageSize()).list();
+
+        int query = 0;
+        if (Objects.nonNull(filterName)) {
+            query = query | FILTER_NAME;
+        }
+        if (Objects.nonNull(filterStatus)) {
+            query = query | FILTER_STATUS;
+        }
+
+        switch (query) {
+            case FILTER_NAME:
+                parameters = parameters.and("name", filterName + "%");
+                total = find("#BRIDGE.findByCustomerIdFilterByName", parameters).count();
+                bridges = find("#BRIDGE.findByCustomerIdFilterByName", parameters).page(queryInfo.getPageNumber(), queryInfo.getPageSize()).list();
+                break;
+            case FILTER_STATUS:
+                parameters = parameters.and("status", filterStatus);
+                total = find("#BRIDGE.findByCustomerIdFilterByStatus", parameters).count();
+                bridges = find("#BRIDGE.findByCustomerIdFilterByStatus", parameters).page(queryInfo.getPageNumber(), queryInfo.getPageSize()).list();
+                break;
+            case (FILTER_NAME + FILTER_STATUS):
+                parameters = parameters.and("name", filterName + "%");
+                parameters = parameters.and("status", filterStatus);
+                total = find("#BRIDGE.findByCustomerIdFilterByNameAndStatus", parameters).count();
+                bridges = find("#BRIDGE.findByCustomerIdFilterByNameAndStatus", parameters).page(queryInfo.getPageNumber(), queryInfo.getPageSize()).list();
+                break;
+            default:
+                total = find("#BRIDGE.findByCustomerId", parameters).count();
+                bridges = find("#BRIDGE.findByCustomerId", parameters).page(queryInfo.getPageNumber(), queryInfo.getPageSize()).list();
         }
 
         return new ListResult<>(bridges, queryInfo.getPageNumber(), total);
