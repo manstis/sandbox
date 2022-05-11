@@ -222,6 +222,11 @@ public class BridgesAPITest {
     }
 
     @Test
+    public void testGetBridgesFilterByStatusWithIncorrectValue() {
+        TestUtils.getBridgesFilterByStatusWithAnyValue("banana").then().statusCode(404);
+    }
+
+    @Test
     @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void testGetBridgesFilterByNameAndStatus() {
         Bridge bridge1 = Fixtures.createBridge();

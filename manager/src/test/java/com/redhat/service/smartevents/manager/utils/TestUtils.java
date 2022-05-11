@@ -56,6 +56,11 @@ public class TestUtils {
         return jsonRequest().get(APIConstants.USER_API_BASE_PATH + "?" + queryString);
     }
 
+    public static Response getBridgesFilterByStatusWithAnyValue(String... status) {
+        String queryString = Arrays.stream(status).map(s -> "status=" + s).collect(Collectors.joining("&"));
+        return jsonRequest().get(APIConstants.USER_API_BASE_PATH + "?" + queryString);
+    }
+
     public static Response getBridgesFilterByNameAndStatus(String name, ManagedResourceStatus... status) {
         String queryString = Arrays.stream(status).map(s -> "status=" + s).collect(Collectors.joining("&"));
         return jsonRequest().get(APIConstants.USER_API_BASE_PATH + "?name=" + name + "&" + queryString);
