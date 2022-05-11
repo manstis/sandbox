@@ -51,7 +51,10 @@ paths:
       - name: status
         in: query
         schema:
-          $ref: '#/components/schemas/ManagedResourceStatus'
+          uniqueItems: true
+          type: array
+          items:
+            $ref: '#/components/schemas/ManagedResourceStatus'
       responses:
         "200":
           description: Success.

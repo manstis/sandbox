@@ -1,5 +1,7 @@
 package com.redhat.service.smartevents.infra.models;
 
+import java.util.Set;
+
 import javax.ws.rs.QueryParam;
 
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
@@ -13,14 +15,14 @@ public class QueryFilterInfo {
     private String filterName;
 
     @QueryParam(FILTER_STATUS)
-    private ManagedResourceStatus filterStatus;
+    private Set<ManagedResourceStatus> filterStatus;
 
     public QueryFilterInfo() {
-        this(null, null);
+        this(null, (Set<ManagedResourceStatus>) null);
     }
 
     public QueryFilterInfo(String filterName) {
-        this(filterName, null);
+        this(filterName, (Set<ManagedResourceStatus>) null);
     }
 
     public QueryFilterInfo(ManagedResourceStatus filterStatus) {
@@ -28,6 +30,10 @@ public class QueryFilterInfo {
     }
 
     public QueryFilterInfo(String filterName, ManagedResourceStatus filterStatus) {
+        this(filterName, Set.of(filterStatus));
+    }
+
+    public QueryFilterInfo(String filterName, Set<ManagedResourceStatus> filterStatus) {
         this.filterName = filterName;
         this.filterStatus = filterStatus;
     }
@@ -36,7 +42,7 @@ public class QueryFilterInfo {
         return filterName;
     }
 
-    public ManagedResourceStatus getFilterStatus() {
+    public Set<ManagedResourceStatus> getFilterStatus() {
         return filterStatus;
     }
 

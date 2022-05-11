@@ -26,9 +26,9 @@ import javax.persistence.UniqueConstraint;
         @NamedQuery(name = "BRIDGE.findByCustomerIdFilterByName",
                 query = "from Bridge where customer_id=:customerId and name like :name order by submitted_at desc"),
         @NamedQuery(name = "BRIDGE.findByCustomerIdFilterByStatus",
-                query = "from Bridge where customer_id=:customerId and status=:status order by submitted_at desc"),
+                query = "from Bridge where customer_id=:customerId and status in (:status) order by submitted_at desc"),
         @NamedQuery(name = "BRIDGE.findByCustomerIdFilterByNameAndStatus",
-                query = "from Bridge where customer_id=:customerId and name like :name and status=:status order by submitted_at desc"),
+                query = "from Bridge where customer_id=:customerId and name like :name and status in (:status) order by submitted_at desc"),
 })
 @Entity
 @Table(name = "BRIDGE", uniqueConstraints = { @UniqueConstraint(columnNames = { "name", "customer_id" }) })

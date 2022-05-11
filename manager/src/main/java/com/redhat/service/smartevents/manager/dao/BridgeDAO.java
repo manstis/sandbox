@@ -2,6 +2,7 @@ package com.redhat.service.smartevents.manager.dao;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.transaction.Transactional;
@@ -44,13 +45,13 @@ public class BridgeDAO implements PanacheRepositoryBase<Bridge, String> {
         long total;
         List<Bridge> bridges;
         String filterName = queryInfo.getFilterInfo().getFilterName();
-        ManagedResourceStatus filterStatus = queryInfo.getFilterInfo().getFilterStatus();
+        Set<ManagedResourceStatus> filterStatus = queryInfo.getFilterInfo().getFilterStatus();
 
         int query = 0;
         if (Objects.nonNull(filterName)) {
             query = query | FILTER_NAME;
         }
-        if (Objects.nonNull(filterStatus)) {
+        if (Objects.nonNull(filterStatus) && !filterStatus.isEmpty()) {
             query = query | FILTER_STATUS;
         }
 

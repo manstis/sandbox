@@ -191,6 +191,38 @@ public class BridgesAPITest {
 
     @Test
     @TestSecurity(user = DEFAULT_CUSTOMER_ID)
+    public void testGetBridgesFilterByMultipleStatuses() {
+        Bridge bridge1 = Fixtures.createBridge();
+        bridge1.setName(DEFAULT_BRIDGE_NAME + "1");
+        bridge1.setStatus(READY);
+        bridgeDAO.persist(bridge1);
+
+        Bridge bridge2 = Fixtures.createBridge();
+        bridge2.setName(DEFAULT_BRIDGE_NAME + "2");
+        bridge2.setStatus(ACCEPTED);
+        bridgeDAO.persist(bridge2);
+
+        BridgeListResponse bridgeListResponse = TestUtils.getBridgesFilterByStatus(READY, ACCEPTED).as(BridgeListResponse.class);
+
+        // The default sorting is by submission date descending; so Bridge2 will be first
+        assertThat(bridgeListResponse.getItems().size()).isEqualTo(2);
+        BridgeResponse bridgeResponse1 = bridgeListResponse.getItems().get(0);
+        assertThat(bridgeResponse1.getName()).isEqualTo(bridge2.getName());
+        assertThat(bridgeResponse1.getStatus()).isEqualTo(bridge2.getStatus());
+        assertThat(bridgeResponse1.getHref()).isEqualTo(USER_API_BASE_PATH + bridgeResponse1.getId());
+        assertThat(bridgeResponse1.getSubmittedAt()).isNotNull();
+        assertThat(bridgeResponse1.getEndpoint()).isNotNull();
+
+        BridgeResponse bridgeResponse2 = bridgeListResponse.getItems().get(1);
+        assertThat(bridgeResponse2.getName()).isEqualTo(bridge1.getName());
+        assertThat(bridgeResponse2.getStatus()).isEqualTo(bridge1.getStatus());
+        assertThat(bridgeResponse2.getHref()).isEqualTo(USER_API_BASE_PATH + bridgeResponse2.getId());
+        assertThat(bridgeResponse2.getSubmittedAt()).isNotNull();
+        assertThat(bridgeResponse2.getEndpoint()).isNotNull();
+    }
+
+    @Test
+    @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void testGetBridgesFilterByNameAndStatus() {
         Bridge bridge1 = Fixtures.createBridge();
         bridge1.setName(DEFAULT_BRIDGE_NAME + "1");
