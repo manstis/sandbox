@@ -92,11 +92,11 @@ public class BridgesServiceTest {
         bridgesService.createBridge(TestConstants.DEFAULT_CUSTOMER_ID, new BridgeRequest(DEFAULT_BRIDGE_NAME + "2"));
 
         ListResult<Bridge> bridges = bridgesService.getBridges(DEFAULT_CUSTOMER_ID,
-                new QueryResourceInfo(0, 100, new QueryFilterInfo(DEFAULT_BRIDGE_NAME)));
+                new QueryResourceInfo(0, 100, new QueryFilterInfo(DEFAULT_BRIDGE_NAME + "2")));
         assertThat(bridges.getPage()).isZero();
         assertThat(bridges.getSize()).isEqualTo(1L);
         assertThat(bridges.getTotal()).isEqualTo(1L);
-        assertThat(bridges.getItems().get(0).getName()).isEqualTo(DEFAULT_BRIDGE_NAME);
+        assertThat(bridges.getItems().get(0).getName()).isEqualTo(DEFAULT_BRIDGE_NAME + "2");
     }
 
     @Test
