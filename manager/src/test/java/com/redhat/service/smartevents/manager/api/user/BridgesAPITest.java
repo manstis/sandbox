@@ -223,6 +223,10 @@ public class BridgesAPITest {
 
     @Test
     public void testGetBridgesFilterByStatusWithIncorrectValue() {
+        // See JAX-RS 2.1 Specification, Section 3.2. 
+        // HTTP-404 is correct if the QueryString contains an invalid value.
+        // If the field or property is annotated with @MatrixParam, @QueryParam or @PathParam then an implementation
+        // MUST generate an instance of NotFoundException (404 status) that wraps the thrown exception...
         TestUtils.getBridgesFilterByStatusWithAnyValue("banana").then().statusCode(404);
     }
 
