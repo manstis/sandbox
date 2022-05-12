@@ -2,6 +2,7 @@ package com.redhat.service.smartevents.manager.dao;
 
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Set;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
@@ -183,6 +184,27 @@ public class BridgeDAOTest {
         assertThat(retrievedBridges.getPage()).isZero();
 
         assertThat(retrievedBridges.getItems().get(0).getId()).isEqualTo(bridge1.getId());
+    }
+
+    @Test
+    public void testListByCustomerIdFilterByMoreStatuses() {
+        Bridge bridge1 = buildBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
+        bridge1.setStatus(ACCEPTED);
+        bridgeDAO.persist(bridge1);
+
+        Bridge bridge2 = buildBridge("mySecondBridgeId", "mySecondBridgeName");
+        bridge2.setStatus(READY);
+        bridgeDAO.persist(bridge2);
+
+        ListResult<Bridge> retrievedBridges = bridgeDAO.findByCustomerId(DEFAULT_CUSTOMER_ID,
+                new QueryResourceInfo(DEFAULT_PAGE, DEFAULT_PAGE_SIZE, new QueryFilterInfo(null, Set.of(ACCEPTED, READY))));
+        assertThat(retrievedBridges).isNotNull();
+        assertThat(retrievedBridges.getSize()).isEqualTo(2);
+        assertThat(retrievedBridges.getTotal()).isEqualTo(2);
+        assertThat(retrievedBridges.getPage()).isZero();
+
+        assertThat(retrievedBridges.getItems().get(0).getId()).isEqualTo(bridge2.getId());
+        assertThat(retrievedBridges.getItems().get(1).getId()).isEqualTo(bridge1.getId());
     }
 
     @Test
