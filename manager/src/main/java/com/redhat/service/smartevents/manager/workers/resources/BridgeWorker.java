@@ -89,9 +89,7 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
     }
 
     private boolean isErrorHandlerProcessorReady(Bridge bridge) {
-        String bridgeId = bridge.getId();
-        String customerId = bridge.getCustomerId();
-        ListResult<Processor> hiddenProcessors = processorService.getHiddenProcessors(bridgeId, customerId);
+        ListResult<Processor> hiddenProcessors = getHiddenProcessors(bridge);
         return hiddenProcessors.getItems().stream().allMatch(ManagedResource::isActionable);
     }
 
@@ -101,9 +99,7 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
      * @param bridge input bridge
      */
     private void createOrUpdateOrDeleteErrorHandlerProcessor(Bridge bridge) {
-        String bridgeId = bridge.getId();
-        String customerId = bridge.getCustomerId();
-        ListResult<Processor> hiddenProcessors = processorService.getHiddenProcessors(bridgeId, customerId);
+        ListResult<Processor> hiddenProcessors = getHiddenProcessors(bridge);
 
         // If an ErrorHandler is not defined, consider it ready and delete any lingering instances
         Action errorHandlerAction = bridge.getDefinition().getErrorHandler();
@@ -185,7 +181,7 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
     private void deleteErrorHandlingProcessor(Bridge bridge) {
         String bridgeId = bridge.getId();
         String customerId = bridge.getCustomerId();
-        ListResult<Processor> hiddenProcessors = processorService.getHiddenProcessors(bridgeId, customerId);
+        ListResult<Processor> hiddenProcessors = getHiddenProcessors(bridge);
         hiddenProcessors.getItems()
                 .stream()
                 .filter(p -> p.getType() == ProcessorType.ERROR_HANDLER)
@@ -194,10 +190,14 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
     }
 
     private boolean isErrorHandlerProcessorDeleted(Bridge bridge) {
+        ListResult<Processor> hiddenProcessors = getHiddenProcessors(bridge);
+        return hiddenProcessors.getItems().isEmpty();
+    }
+
+    private ListResult<Processor> getHiddenProcessors(Bridge bridge) {
         String bridgeId = bridge.getId();
         String customerId = bridge.getCustomerId();
-        ListResult<Processor> hiddenProcessors = processorService.getHiddenProcessors(bridgeId, customerId);
-        return hiddenProcessors.getItems().isEmpty();
+        return processorService.getHiddenProcessors(bridgeId, customerId);
     }
 
     @Override
