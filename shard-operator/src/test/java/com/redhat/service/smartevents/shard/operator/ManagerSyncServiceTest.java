@@ -17,7 +17,7 @@ import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorManagedResourceStatusUpdateDTO;
-import com.redhat.service.smartevents.shard.operator.providers.CustomerNamespaceProvider;
+import com.redhat.service.smartevents.shard.operator.providers.CustomerBridgeNamespaceProvider;
 import com.redhat.service.smartevents.shard.operator.providers.IstioGatewayProvider;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
@@ -36,7 +36,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ManagerSyncServiceTest extends AbstractManagerSyncServiceTest {
 
     @Inject
-    CustomerNamespaceProvider customerNamespaceProvider;
+    CustomerBridgeNamespaceProvider customerBridgeNamespaceProvider;
 
     @Inject
     KubernetesResourcePatcher kubernetesResourcePatcher;
@@ -74,7 +74,7 @@ public class ManagerSyncServiceTest extends AbstractManagerSyncServiceTest {
 
         managerSyncService.doBridges().await().atMost(Duration.ofSeconds(5));
 
-        String customerNamespace = customerNamespaceProvider.resolveName(TestSupport.CUSTOMER_ID);
+        String customerNamespace = customerBridgeNamespaceProvider.resolveName(TestSupport.CUSTOMER_ID, TestSupport.BRIDGE_ID);
         String firstBridgeName = BridgeIngress.resolveResourceName(bridge1.getId());
         String secondBridgeName = BridgeIngress.resolveResourceName(bridge2.getId());
         Awaitility.await()
@@ -157,7 +157,7 @@ public class ManagerSyncServiceTest extends AbstractManagerSyncServiceTest {
         addProcessorUpdateRequestListener(latch);
         managerSyncService.doProcessors().await().atMost(Duration.ofSeconds(5));
 
-        String customerNamespace = customerNamespaceProvider.resolveName(TestSupport.CUSTOMER_ID);
+        String customerNamespace = customerBridgeNamespaceProvider.resolveName(TestSupport.CUSTOMER_ID, TestSupport.BRIDGE_ID);
         String sanitizedName = BridgeExecutor.resolveResourceName(processor.getId());
         Awaitility.await()
                 .atMost(Duration.ofMinutes(3))

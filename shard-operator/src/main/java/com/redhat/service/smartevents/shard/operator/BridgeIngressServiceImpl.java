@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatusUpdateDTO;
-import com.redhat.service.smartevents.shard.operator.providers.CustomerNamespaceProvider;
+import com.redhat.service.smartevents.shard.operator.providers.CustomerBridgeNamespaceProvider;
 import com.redhat.service.smartevents.shard.operator.providers.GlobalConfigurationsConstants;
 import com.redhat.service.smartevents.shard.operator.providers.GlobalConfigurationsProvider;
 import com.redhat.service.smartevents.shard.operator.providers.IstioGatewayProvider;
@@ -38,7 +38,7 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
     KubernetesClient kubernetesClient;
 
     @Inject
-    CustomerNamespaceProvider customerNamespaceProvider;
+    CustomerBridgeNamespaceProvider customerBridgeNamespaceProvider;
 
     @Inject
     TemplateProvider templateProvider;
@@ -54,7 +54,9 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
 
     @Override
     public void createBridgeIngress(BridgeDTO bridgeDTO) {
-        final Namespace namespace = customerNamespaceProvider.fetchOrCreateCustomerNamespace(bridgeDTO.getCustomerId());
+        String customerId = bridgeDTO.getCustomerId();
+        String bridgeId = bridgeDTO.getId();
+        final Namespace namespace = customerBridgeNamespaceProvider.fetchOrCreateCustomerBridgeNamespace(customerId, bridgeId);
 
         BridgeIngress expected = BridgeIngress.fromDTO(bridgeDTO, namespace.getMetadata().getName());
 
@@ -83,13 +85,18 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
 
     @Override
     public void deleteBridgeIngress(BridgeDTO bridgeDTO) {
-        final String namespace = customerNamespaceProvider.resolveName(bridgeDTO.getCustomerId());
+        String customerId = bridgeDTO.getCustomerId();
+        String bridgeId = bridgeDTO.getId();
+        final Namespace namespace = customerBridgeNamespaceProvider.fetchOrCreateCustomerBridgeNamespace(customerId, bridgeId);
         final boolean bridgeDeleted =
                 kubernetesClient
                         .resources(BridgeIngress.class)
-                        .inNamespace(namespace)
-                        .delete(BridgeIngress.fromDTO(bridgeDTO, namespace));
-        if (!bridgeDeleted) {
+                        .inNamespace(namespace.getMetadata().getName())
+                        .delete(BridgeIngress.fromDTO(bridgeDTO, namespace.getMetadata().getName()));
+        if (bridgeDeleted) {
+            customerBridgeNamespaceProvider.deleteNamespaceIfEmpty(namespace);
+
+        } else {
             // TODO: we might need to review this use case and have a manager to look at a queue of objects not deleted and investigate. Unfortunately the API does not give us a reason.
             LOGGER.warn("BridgeIngress '{}' not deleted. Notifying manager that it has been deleted.", bridgeDTO.getId());
             ManagedResourceStatusUpdateDTO updateDTO = new ManagedResourceStatusUpdateDTO(bridgeDTO.getId(), bridgeDTO.getCustomerId(), ManagedResourceStatus.DELETED);
