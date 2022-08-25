@@ -17,6 +17,7 @@ import com.redhat.service.smartevents.shard.operator.BridgeIngressService;
 import com.redhat.service.smartevents.shard.operator.ManagerClient;
 import com.redhat.service.smartevents.shard.operator.networking.NetworkResource;
 import com.redhat.service.smartevents.shard.operator.networking.NetworkingService;
+import com.redhat.service.smartevents.shard.operator.providers.CustomerBridgeNamespaceProvider;
 import com.redhat.service.smartevents.shard.operator.providers.IstioGatewayProvider;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
 import com.redhat.service.smartevents.shard.operator.resources.ConditionReasonConstants;
@@ -27,6 +28,7 @@ import com.redhat.service.smartevents.shard.operator.utils.EventSourceFactory;
 import com.redhat.service.smartevents.shard.operator.utils.LabelsBuilder;
 
 import io.fabric8.kubernetes.api.model.ConfigMap;
+import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
@@ -59,6 +61,9 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
 
     @Inject
     IstioGatewayProvider istioGatewayProvider;
+
+    @Inject
+    CustomerBridgeNamespaceProvider customerBridgeNamespaceProvider;
 
     @Override
     public List<EventSource> prepareEventSources(EventSourceContext<BridgeIngress> eventSourceContext) {
@@ -144,6 +149,11 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
         // Since the ingress for the gateway has to be in the istio-system namespace
         // we can not set the owner reference. We have to delete the resource manually.
         networkingService.delete(bridgeIngress.getMetadata().getName(), istioGatewayProvider.getIstioGatewayService().getMetadata().getNamespace());
+
+        String customerId = bridgeIngress.getSpec().getCustomerId();
+        String bridgeId = bridgeIngress.getSpec().getId();
+        Namespace namespace = customerBridgeNamespaceProvider.fetchOrCreateCustomerBridgeNamespace(customerId, bridgeId);
+        customerBridgeNamespaceProvider.deleteNamespaceIfEmpty(namespace);
 
         notifyManager(bridgeIngress, ManagedResourceStatus.DELETED);
 

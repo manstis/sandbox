@@ -87,16 +87,12 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
     public void deleteBridgeIngress(BridgeDTO bridgeDTO) {
         String customerId = bridgeDTO.getCustomerId();
         String bridgeId = bridgeDTO.getId();
-        final Namespace namespace = customerBridgeNamespaceProvider.fetchOrCreateCustomerBridgeNamespace(customerId, bridgeId);
-        final boolean bridgeDeleted =
-                kubernetesClient
-                        .resources(BridgeIngress.class)
-                        .inNamespace(namespace.getMetadata().getName())
-                        .delete(BridgeIngress.fromDTO(bridgeDTO, namespace.getMetadata().getName()));
-        if (bridgeDeleted) {
-            customerBridgeNamespaceProvider.deleteNamespaceIfEmpty(namespace);
 
-        } else {
+        // Deletion of the Namespace will cascade deletion of the BridgeIngress
+        final Namespace namespace = customerBridgeNamespaceProvider.fetchOrCreateCustomerBridgeNamespace(customerId, bridgeId);
+        final boolean nameSpaceDeleted = kubernetesClient.namespaces().delete(namespace);
+
+        if (!nameSpaceDeleted) {
             // TODO: we might need to review this use case and have a manager to look at a queue of objects not deleted and investigate. Unfortunately the API does not give us a reason.
             LOGGER.warn("BridgeIngress '{}' not deleted. Notifying manager that it has been deleted.", bridgeDTO.getId());
             ManagedResourceStatusUpdateDTO updateDTO = new ManagedResourceStatusUpdateDTO(bridgeDTO.getId(), bridgeDTO.getCustomerId(), ManagedResourceStatus.DELETED);

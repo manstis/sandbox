@@ -154,11 +154,9 @@ public class BridgeIngressServiceTest {
         assertThat(namespaceExisting).isNotNull();
 
         bridgeIngressService.deleteBridgeIngress(dto);
-        waitUntilBridgeIngressDoesntExist(dto);
 
         // Then
-        BridgeIngress bridgeIngressDeleted = fetchBridgeIngress(dto);
-        assertThat(bridgeIngressDeleted).isNull();
+        waitUntilBridgeIngressDoesntExist(dto);
 
         Namespace namespaceDeleted = fetchNamespace(nameSpaceName);
         assertThat(namespaceDeleted).isNull();
