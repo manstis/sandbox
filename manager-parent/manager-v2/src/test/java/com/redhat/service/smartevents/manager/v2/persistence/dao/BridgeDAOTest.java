@@ -28,6 +28,9 @@ public class BridgeDAOTest {
     BridgeDAO bridgeDAO;
 
     @Inject
+    ConditionDAO conditionDAO;
+
+    @Inject
     DatabaseManagerUtils databaseManagerUtils;
 
     @BeforeEach
@@ -51,7 +54,7 @@ public class BridgeDAOTest {
 
     @Test
     @Transactional
-    public void testStoreBridgeWithConditions() {
+    public void testStoreBridgeWithCondition() {
         Bridge bridge = createBridge();
 
         Condition condition = createCondition();
@@ -66,4 +69,63 @@ public class BridgeDAOTest {
         assertThat(retrieved.getOperation().getRequestedAt()).isNotNull();
         assertThat(retrieved.getConditions()).hasSize(1);
     }
+
+    @Test
+    @Transactional
+    public void testStoreBridgeWithConditions() {
+        Bridge bridge = createBridge();
+
+        Condition condition1 = createCondition();
+        Condition condition2 = createCondition();
+        Condition condition3 = createCondition();
+
+        bridge.setConditions(List.of(condition1, condition2, condition3));
+        bridgeDAO.persist(bridge);
+
+        Bridge retrieved = bridgeDAO.findById(bridge.getId());
+        assertThat(retrieved.getId()).isEqualTo(bridge.getId());
+        assertThat(retrieved.getOperation()).isNotNull();
+        assertThat(retrieved.getOperation().getType()).isNotNull();
+        assertThat(retrieved.getOperation().getRequestedAt()).isNotNull();
+        assertThat(retrieved.getConditions()).hasSize(3);
+    }
+
+    @Test
+    public void testRemovalOfCondition() {
+        Bridge bridge = createBridgeWithConditions();
+        removeConditionFromBridge(bridge);
+        checkConditions();
+    }
+
+    @Transactional
+    protected Bridge createBridgeWithConditions() {
+        Bridge bridge = createBridge();
+
+        Condition condition1 = createCondition();
+        Condition condition2 = createCondition();
+        Condition condition3 = createCondition();
+
+        bridge.setConditions(List.of(condition1, condition2, condition3));
+        bridgeDAO.persist(bridge);
+
+        return bridge;
+    }
+
+    @Transactional
+    protected void removeConditionFromBridge(Bridge bridge) {
+        Bridge retrieved = bridgeDAO.findById(bridge.getId());
+        assertThat(retrieved.getConditions()).hasSize(3);
+
+        Condition condition3 = retrieved.getConditions().get(2);
+        retrieved.getConditions().remove(condition3);
+        bridgeDAO.persist(retrieved);
+    }
+
+    @Transactional
+    protected void checkConditions() {
+        List<Condition> conditions = conditionDAO.findAll().list();
+
+        assertThat(conditions.size()).isEqualTo(2);
+    }
+
 }
