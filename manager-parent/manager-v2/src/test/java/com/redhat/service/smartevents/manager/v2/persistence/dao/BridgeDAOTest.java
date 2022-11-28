@@ -28,9 +28,6 @@ public class BridgeDAOTest {
     BridgeDAO bridgeDAO;
 
     @Inject
-    ConditionDAO conditionDAO;
-
-    @Inject
     DatabaseManagerUtils databaseManagerUtils;
 
     @BeforeEach
@@ -57,8 +54,7 @@ public class BridgeDAOTest {
     public void testStoreBridgeWithConditions() {
         Bridge bridge = createBridge();
 
-        Condition condition = createCondition(bridge, null);
-        conditionDAO.persist(condition);
+        Condition condition = createCondition();
 
         bridge.setConditions(List.of(condition));
         bridgeDAO.persist(bridge);

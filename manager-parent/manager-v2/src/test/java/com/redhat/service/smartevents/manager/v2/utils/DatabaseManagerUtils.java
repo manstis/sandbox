@@ -8,7 +8,6 @@ import com.redhat.service.smartevents.manager.core.persistence.dao.ShardDAO;
 import com.redhat.service.smartevents.manager.core.persistence.models.Shard;
 import com.redhat.service.smartevents.manager.v2.TestConstants;
 import com.redhat.service.smartevents.manager.v2.persistence.dao.BridgeDAO;
-import com.redhat.service.smartevents.manager.v2.persistence.dao.ConditionDAO;
 import com.redhat.service.smartevents.manager.v2.persistence.dao.ProcessorDAO;
 
 /**
@@ -26,9 +25,6 @@ public class DatabaseManagerUtils {
 
     @Inject
     ProcessorDAO processorDAO;
-
-    @Inject
-    ConditionDAO conditionDAO;
 
     @Inject
     ShardDAO shardDAO;
